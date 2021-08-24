@@ -13,10 +13,12 @@ class _BlueToothPageState extends State<BlueToothPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: RaisedButton(
-        onPressed: () {
-          setState(() {
+    return SafeArea(
+      child: Container(
+        width: 300,
+        height: 100,
+        child: RaisedButton(
+          onPressed: () {
             // Start scanning
             flutterBlue.startScan(timeout: Duration(seconds: 4));
 
@@ -30,9 +32,9 @@ class _BlueToothPageState extends State<BlueToothPage> {
 
             // Stop scanning
             flutterBlue.stopScan();
-          });
-        },
-        child: Text("connect"),
+          },
+          child: Text("connect"),
+        ),
       ),
     );
   }
