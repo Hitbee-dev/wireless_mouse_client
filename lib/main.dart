@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:wireless_mouse/pages/bluetooth_page.dart';
 import 'package:wireless_mouse/pages/hardware_page.dart';
 import 'package:wireless_mouse/pages/home_page.dart';
+import 'package:wireless_mouse/pages/manual_page.dart';
 import 'package:wireless_mouse/pages/software_page.dart';
 import 'package:wireless_mouse/pages/touchpad_page.dart';
 
@@ -34,6 +35,10 @@ class WireLessMouse extends StatelessWidget {
         GetPage(
             name: "/hardware",
             page: () => HardWarePage(),
+            transition: Transition.cupertinoDialog),
+        GetPage(
+            name: "/manual",
+            page: () => ManualPage(),
             transition: Transition.cupertinoDialog),
         GetPage(
             name: "/bluetooth",

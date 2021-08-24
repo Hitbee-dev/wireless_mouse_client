@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
-import 'package:flutter_blue/flutter_blue.dart';
 import 'package:get/get.dart';
 
 class HomePage extends StatelessWidget {
@@ -20,6 +18,7 @@ class HomePage extends StatelessWidget {
               moveButton("TouchPad", "/touchpad"),
               moveButton("SoftWare", "/software"),
               moveButton("HardWare", "/hardware"),
+              moveButton("Manual", "/manual"),
               moveButton("BlueTooth", "/bluetooth"),
             ],
           ),
@@ -33,7 +32,7 @@ class HomePage extends StatelessWidget {
         padding: EdgeInsets.only(top: 30),
         width: 200,
         height: 80,
-        child: RaisedButton(
+        child: ElevatedButton(
             child: Text(
               name,
               textAlign: TextAlign.center,

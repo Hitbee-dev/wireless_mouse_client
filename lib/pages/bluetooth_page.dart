@@ -17,18 +17,10 @@ class _BlueToothPageState extends State<BlueToothPage> {
       child: Container(
         width: 300,
         height: 100,
-        child: RaisedButton(
+        child: ElevatedButton(
           onPressed: () {
             // Start scanning
             flutterBlue.startScan(timeout: Duration(seconds: 4));
-
-            // Listen to scan results
-            var subscription = flutterBlue.scanResults.listen((results) {
-              // do something with scan results
-              for (ScanResult r in results) {
-                print('${r.device.name} found! rssi: ${r.rssi}');
-              }
-            });
 
             // Stop scanning
             flutterBlue.stopScan();

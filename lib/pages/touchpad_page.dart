@@ -34,11 +34,14 @@ class _TouchPadPageState extends State<TouchPadPage> {
                 padding: EdgeInsets.only(top: 30),
                 width: 300,
                 height: 250,
-                child: RaisedButton(onPressed: () {
-                  setState(() {
-                    MouseClickEvent += "X: 321, Y: 42\n";
-                  });
-                }),
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      MouseClickEvent += "X: 321, Y: 42\n";
+                    });
+                  },
+                  child: null,
+                ),
               ),
               _Monitoring()
             ],
@@ -53,11 +56,14 @@ class _TouchPadPageState extends State<TouchPadPage> {
       padding: EdgeInsets.symmetric(horizontal: padding),
       width: 100,
       height: 70,
-      child: RaisedButton(onPressed: () {
-        setState(() {
-          MouseClickEvent += eventLog;
-        });
-      }),
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            MouseClickEvent += eventLog;
+          });
+        },
+        child: null,
+      ),
     );
   }
 
