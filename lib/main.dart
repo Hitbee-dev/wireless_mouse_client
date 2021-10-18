@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wireless_mouse/pages/bluetooth_page.dart';
-import 'package:wireless_mouse/pages/hardware_page.dart';
+import 'package:wireless_mouse/menus/camera/camera_page.dart';
+import 'package:wireless_mouse/menus/hardware/hardware_page.dart';
+import 'package:wireless_mouse/menus/touchpad/touchpad_page.dart';
 import 'package:wireless_mouse/pages/home_page.dart';
-import 'package:wireless_mouse/pages/manual_page.dart';
-import 'package:wireless_mouse/pages/software_page.dart';
-import 'package:wireless_mouse/pages/touchpad_page.dart';
+import 'package:wireless_mouse/pages/menu_page.dart';
 
 void main() {
   runApp(WireLessMouse());
@@ -16,7 +15,7 @@ class WireLessMouse extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: "WireLess Mouse",
+      title: "무선마우스",
       theme: ThemeData(primarySwatch: Colors.amber),
       initialRoute: "/",
       getPages: [
@@ -25,24 +24,20 @@ class WireLessMouse extends StatelessWidget {
             page: () => HomePage(),
             transition: Transition.cupertinoDialog),
         GetPage(
-            name: "/touchpad",
-            page: () => TouchPadPage(),
+            name: "/menu",
+            page: () => MenuPage(),
             transition: Transition.cupertinoDialog),
         GetPage(
-            name: "/software",
-            page: () => SoftWarePage(),
+            name: "/touchpad",
+            page: () => TouchpadPage(),
+            transition: Transition.cupertinoDialog),
+        GetPage(
+            name: "/camera",
+            page: () => CameraPage(),
             transition: Transition.cupertinoDialog),
         GetPage(
             name: "/hardware",
-            page: () => HardWarePage(),
-            transition: Transition.cupertinoDialog),
-        GetPage(
-            name: "/manual",
-            page: () => ManualPage(),
-            transition: Transition.cupertinoDialog),
-        GetPage(
-            name: "/bluetooth",
-            page: () => BlueToothPage(),
+            page: () => HardwarePage(),
             transition: Transition.cupertinoDialog),
       ],
     );

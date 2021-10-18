@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class HardWarePage extends StatelessWidget {
-  const HardWarePage({Key? key}) : super(key: key);
+class TouchpadPage extends StatelessWidget {
+  const TouchpadPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
