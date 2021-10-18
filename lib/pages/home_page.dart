@@ -119,10 +119,15 @@ class _HomePageState extends State<HomePage> {
                     ),
                     OutlinedButton.icon(
                       onPressed: () {
-                        setState(() {
-                          _questionText = "";
-                          _questionController.text = "";
-                        });
+                        if (_questionText == "") {
+                          showSnackBar("내용이 없습니다.");
+                        } else {
+                          showSnackBar("문의 접수가 완료되었습니다.");
+                          setState(() {
+                            _questionText = "";
+                            _questionController.text = "";
+                          });
+                        }
                       },
                       label: Text("문의사항 접수하기",
                           style: TextStyle(fontSize: 18, color: Colors.grey)),
