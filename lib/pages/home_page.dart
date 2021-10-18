@@ -11,7 +11,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _questionText = "";
-  bool hideIP = true;
+  bool hideIP = false;
   TextEditingController _questionController = TextEditingController();
   TextEditingController _ipController = TextEditingController();
 
@@ -28,10 +28,15 @@ class _HomePageState extends State<HomePage> {
         title: Text("무선마우스",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         centerTitle: true,
-        leading: IconButton(onPressed: null, icon: Icon(Icons.menu)),
+        leading: IconButton(
+            onPressed: () {
+              showSnackBar("구현 진행중..");
+            },
+            icon: Icon(Icons.menu)),
         actions: [
           IconButton(
               onPressed: () {
+                // showSnackBar("접속 실패! IP를 확인 해 주세요.");
                 Get.toNamed("/menu", arguments: _ipController.text);
                 setState(() {
                   _ipController.text = "";
@@ -51,14 +56,14 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (value) {
                     // print(value); 실시간 IP 변화 값
                   },
-                  obscureText: hideIP, //show/hide password
+                  obscureText: hideIP,
                   decoration: InputDecoration(
                     prefixIcon:
                         hideIP ? Icon(Icons.lock) : Icon(Icons.lock_open),
                     suffixIcon: IconButton(
                       icon: hideIP
-                          ? Icon(Icons.visibility_off)
-                          : Icon(Icons.visibility),
+                          ? Icon(Icons.visibility)
+                          : Icon(Icons.visibility_off),
                       onPressed: () {
                         setState(() {
                           hideIP = !hideIP;
@@ -133,70 +138,81 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
 
-Widget _InfoWidget(BuildContext context) {
-  return Padding(
-    padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
-    child: Card(
-      elevation: 6,
-      child: Column(
-        children: <Widget>[
-          Container(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: <Widget>[
-                Icon(Icons.menu_book, size: 18, color: Colors.black87),
-                Text(
-                  '  사용안내',
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.black87),
-                ),
-                Spacer(),
-                Icon(Icons.more_vert, size: 18, color: Colors.black87),
-              ],
+  Widget _InfoWidget(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
+      child: Card(
+        elevation: 6,
+        child: Column(
+          children: <Widget>[
+            Container(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Icon(Icons.menu_book, size: 18, color: Colors.black87),
+                  Text(
+                    '  사용안내',
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black87),
+                  ),
+                  Spacer(),
+                  Icon(Icons.more_vert, size: 18, color: Colors.black87),
+                ],
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              decoration: BoxDecoration(
+                color: Colors.amber[300],
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+              ),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-            decoration: BoxDecoration(
-              color: Colors.amber[300],
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+            Padding(
+              padding: EdgeInsets.only(top: 30, bottom: 10),
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                      height: 150,
+                      child: Text(
+                          '1. IP 입력\n'
+                          '   1) 서버프로그램 실행\n'
+                          '   2) 출력된 IP 입력\n\n'
+                          '2. 인증\n'
+                          '   1) 우측 상단 버튼 클릭\n'
+                          '   2) 오류 발생 시 IP 확인\n',
+                          style: TextStyle(color: Colors.black87))),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 30, bottom: 10),
-            child: Column(
-              children: <Widget>[
-                SizedBox(
-                    height: 150,
-                    child: Text(
-                        '1. IP 입력\n'
-                        '   1) 서버프로그램 실행\n'
-                        '   2) 출력된 IP 입력\n\n'
-                        '2. 인증\n'
-                        '   1) 우측 상단 버튼 클릭\n'
-                        '   2) 오류 발생 시 IP 확인\n',
-                        style: TextStyle(color: Colors.black87))),
-              ],
-            ),
-          ),
-          Divider(height: 2, color: Colors.black26),
-          Container(
-            child: Row(
-              children: <Widget>[
-                Icon(Icons.history, size: 16, color: Colors.black38),
-                Text('  Copyright© 2021 HCI All rights reserved.',
-                    style: TextStyle(fontSize: 13, color: Colors.black38)),
-                Spacer(),
-                Icon(Icons.chevron_right, size: 16, color: Colors.black38),
-              ],
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-          )
-        ],
+            Divider(height: 2, color: Colors.black26),
+            Container(
+              child: Row(
+                children: <Widget>[
+                  Icon(Icons.history, size: 16, color: Colors.black38),
+                  Text('  Copyright© 2021 HCI All rights reserved.',
+                      style: TextStyle(fontSize: 13, color: Colors.black38)),
+                  Spacer(),
+                  Icon(Icons.chevron_right, size: 16, color: Colors.black38),
+                ],
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            )
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
+
+  showSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      action: SnackBarAction(
+        label: '확인',
+        onPressed: () {},
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 }
