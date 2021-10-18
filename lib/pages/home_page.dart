@@ -11,6 +11,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _questionText = "";
+  bool hideIP = true;
   TextEditingController _questionController = TextEditingController();
   TextEditingController _ipController = TextEditingController();
 
@@ -32,6 +33,9 @@ class _HomePageState extends State<HomePage> {
           IconButton(
               onPressed: () {
                 Get.toNamed("/menu", arguments: _ipController.text);
+                setState(() {
+                  _ipController.text = "";
+                });
               },
               icon: Icon(Icons.send))
         ],
@@ -43,13 +47,30 @@ class _HomePageState extends State<HomePage> {
               Container(
                 padding: EdgeInsets.all(20),
                 child: TextField(
-                    controller: _ipController,
-                    keyboardType: TextInputType.datetime,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'IP',
-                    )),
+                  controller: _ipController,
+                  onChanged: (value) {
+                    // print(value); 실시간 IP 변화 값
+                  },
+                  obscureText: hideIP, //show/hide password
+                  decoration: InputDecoration(
+                    prefixIcon:
+                        hideIP ? Icon(Icons.lock) : Icon(Icons.lock_open),
+                    suffixIcon: IconButton(
+                      icon: hideIP
+                          ? Icon(Icons.visibility_off)
+                          : Icon(Icons.visibility),
+                      onPressed: () {
+                        setState(() {
+                          hideIP = !hideIP;
+                        });
+                      },
+                    ),
+                    labelText: 'IP',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                ),
               ),
               _InfoWidget(context),
               Container(
@@ -125,12 +146,16 @@ Widget _InfoWidget(BuildContext context) {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
-                Icon(Icons.check_circle_outline, size: 18, color: Colors.green),
-                Text('  사용안내',
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.normal)),
+                Icon(Icons.menu_book, size: 18, color: Colors.black87),
+                Text(
+                  '  사용안내',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black87),
+                ),
                 Spacer(),
-                Icon(Icons.more_vert, size: 18, color: Colors.grey),
+                Icon(Icons.more_vert, size: 18, color: Colors.black87),
               ],
             ),
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
