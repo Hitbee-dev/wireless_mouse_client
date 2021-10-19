@@ -37,8 +37,12 @@ class _TouchpadPageState extends State<TouchpadPage> {
           setState(() {
             this.cdx = details.globalPosition.dx - (this.boxWidth / 2);
             this.cdy = details.globalPosition.dy - (this.boxHeight / 2);
-            print(this.cdx);
-            print(this.cdy);
+            if (this.cdx > 0) {
+              print("x: ${this.cdx}");
+            }
+            if (this.cdy > 0) {
+              print("y: ${this.cdy}");
+            }
           });
         },
         child: Container(
