@@ -3,13 +3,18 @@ import 'package:get/get.dart';
 import 'package:wireless_mouse/pages/home_page.dart';
 
 class MenuPage extends StatelessWidget {
-  const MenuPage({Key? key}) : super(key: key);
+  MenuPage({Key? key}) : super(key: key);
+  String ips = (Get.arguments as IPStatus).ip;
+  @override
+  void initstate() {
+    (ips == Null) ? "" : ips;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${(Get.arguments as IPStatus).ip}"),
+        title: Text(ips),
       ),
       body: Container(
         child: Center(
