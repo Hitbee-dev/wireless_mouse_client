@@ -34,7 +34,7 @@ class MenuPage extends StatelessWidget {
 
   Widget _menuButton(String name, Function) {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.only(top: 50, left: 20, right: 20),
       child: Card(
         elevation: 7,
         child: ElevatedButton(
@@ -47,7 +47,7 @@ class MenuPage extends StatelessWidget {
 
   Widget _InfoWidget(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 30, left: 20, right: 20, bottom: 10),
+      padding: EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 10),
       child: Card(
         elevation: 6,
         child: Column(
