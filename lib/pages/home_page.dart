@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:wireless_mouse/Socket/PacketCreator.dart';
 import 'package:wireless_mouse/Socket/Protocol.dart';
+import 'package:wireless_mouse/Socket/SocketObject.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,13 +16,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
-  late Socket mouseSocket;
   List<MessageItem> items = [];
   String _questionText = "";
   bool hideIP = false;
-  int serverCheck = 0;
+  bool hidePORT = false;
+  bool serverHide = false;
+  static int serverCheck = 0;
   TextEditingController _questionController = TextEditingController();
   TextEditingController _ipController = TextEditingController();
+  TextEditingController _portController = TextEditingController();
 
   @override
   void initState() {
@@ -57,6 +60,7 @@ class _HomePageState extends State<HomePage> {
             return ListView(
               children: <Widget>[
                 _IPdata("IP Address", "192.168.0.1"),
+                _PORTdata("PORT", "50"),
                 _InfoWidget(context),
                 _Questions()
               ],
@@ -69,7 +73,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _IPdata(String nameIP, String hintIP) {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.only(top: 20, left: 20, right: 20),
       child: TextField(
         controller: _ipController,
         onChanged: (value) {
@@ -77,12 +81,17 @@ class _HomePageState extends State<HomePage> {
         },
         obscureText: hideIP,
         decoration: InputDecoration(
-          prefixIcon: hideIP ? Icon(Icons.lock) : Icon(Icons.lock_open),
+          prefixIcon:
+              (serverCheck == 1) ? Icon(Icons.lock) : Icon(Icons.lock_open),
           suffixIcon: IconButton(
-            icon: hideIP ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
+            icon: serverHide
+                ? Icon(Icons.visibility_off)
+                : Icon(Icons.visibility),
             onPressed: () {
               setState(() {
                 hideIP = !hideIP;
+                hidePORT = !hidePORT;
+                serverHide = !serverHide;
               });
             },
           ),
@@ -96,10 +105,39 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _PORTdata(String namePORT, String hintPORT) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      child: TextField(
+        controller: _portController,
+        onChanged: (value) {
+          // print(value); 실시간 IP 변화 값
+        },
+        obscureText: hidePORT,
+        decoration: InputDecoration(
+          prefixIcon:
+              (serverCheck == 1) ? Icon(Icons.lock) : Icon(Icons.lock_open),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.send),
+            onPressed: () {
+              setState(() {
+                connectToServer();
+              });
+            },
+          ),
+          labelText: namePORT,
+          hintText: hintPORT,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(5),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _SendButton() {
     return IconButton(
         onPressed: () {
-          connectToServer();
           if (serverCheck == 0) {
             showSnackBar("접속 실패! IP를 확인 해 주세요.");
           } else if (serverCheck == 1) {
@@ -147,14 +185,14 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 children: <Widget>[
                   SizedBox(
-                      height: 150,
+                      height: 130,
                       child: Text(
-                          '1. IP 입력\n'
-                          '   1) 서버프로그램 실행\n'
-                          '   2) 출력된 IP 입력\n\n'
-                          '2. 인증\n'
-                          '   1) 우측 상단 버튼 클릭\n'
-                          '   2) 오류 발생 시 IP 확인\n',
+                          '1. 서버프로그램 실행\n'
+                          '2. 출력된 IP 입력\n'
+                          '3. 출력된 PORT 입력\n'
+                          '4. PORT 입력란의 버튼 클릭으로 인증\n'
+                          '5. 오류 발생 시 IP 확인\n'
+                          '6. 인증 완료 후 우측 상단 버튼으로 메뉴이동\n',
                           style: TextStyle(color: Colors.black87))),
                 ],
               ),
@@ -244,13 +282,15 @@ class _HomePageState extends State<HomePage> {
 
   void connectToServer() async {
     print("Destination Address: ${_ipController.text}");
-    int port = 50003;
+    int port = int.parse(_portController.text);
     Socket.connect(_ipController.text, port, timeout: Duration(seconds: 5))
         .then((socket) {
       setState(() {
-        mouseSocket = socket;
+        SocketObject.mouseSocket = socket;
       });
       serverCheck = 1;
+      hideIP = !hideIP;
+      hidePORT = !hidePORT;
       showSnackBar("Server : 서버에 연결되었습니다.");
       socket.listen(
         (onData) {
@@ -261,7 +301,7 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             items.insert(
                 0,
-                MessageItem(mouseSocket.remoteAddress.address,
+                MessageItem(SocketObject.mouseSocket.remoteAddress.address,
                     String.fromCharCodes(onData).trim()));
           });
         },
@@ -270,6 +310,7 @@ class _HomePageState extends State<HomePage> {
       );
     }).catchError((e) {
       showSnackBar(e.toString());
+      serverCheck = 0;
     });
   }
 
@@ -286,16 +327,16 @@ class _HomePageState extends State<HomePage> {
   void disconnectFromServer() {
     showSnackBar("서버 연결이 종료되었습니다.");
     serverCheck = 0;
-    mouseSocket.close();
+    SocketObject.mouseSocket.close();
   }
 
   void packetHandler(Map data) {
     int part = data["part"];
     if (part == PacketCreator.MOUSE_GESTURE) {
       print("packet: ${data["res"]}");
-      WidgetsBinding.instance!.addPostFrameCallback((_) {
-        _refreshIndicatorKey.currentState!.show(); // 화면 업데이트
-      });
+      // WidgetsBinding.instance!.addPostFrameCallback((_) {
+      //   _refreshIndicatorKey.currentState!.show(); // 화면 업데이트
+      // });
     }
   }
 

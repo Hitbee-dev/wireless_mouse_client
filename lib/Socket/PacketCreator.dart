@@ -1,9 +1,9 @@
 import 'Protocol.dart';
 
 class PacketCreator {
-  static final int MOUSE_GESTURE = 100;
+  static final int MOUSE_GESTURE = 5;
 
-  static String mouseGesture(String x, String y) {
+  static String mouseGesture(double x, double y) {
     Map data = new Map();
     data["part"] = MOUSE_GESTURE;
     data["x"] = x;
