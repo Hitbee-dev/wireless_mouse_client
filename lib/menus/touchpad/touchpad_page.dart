@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:wireless_mouse/Socket/PacketCreator.dart';
+import 'package:wireless_mouse/Socket/SocketObject.dart';
+import 'package:wireless_mouse/pages/home_page.dart';
 
 class TouchpadPage extends StatefulWidget {
   const TouchpadPage({Key? key}) : super(key: key);
@@ -37,6 +40,10 @@ class _TouchpadPageState extends State<TouchpadPage> {
           setState(() {
             this.cdx = details.globalPosition.dx - (this.boxWidth / 2);
             this.cdy = details.globalPosition.dy - (this.boxHeight / 2);
+
+            SocketObject.mouseSocket
+                .write(PacketCreator.mouseGesture(this.cdx, this.cdy));
+
             if (this.cdx > 0) {
               print("x: ${this.cdx}");
             }
