@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:wireless_mouse/Socket/PacketCreator.dart';
+import 'package:wireless_mouse/Socket/Protocol.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -10,41 +13,56 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+  late Socket mouseSocket;
+  List<MessageItem> items = [];
   String _questionText = "";
   bool hideIP = false;
+  int serverCheck = 0;
   TextEditingController _questionController = TextEditingController();
   TextEditingController _ipController = TextEditingController();
 
   @override
-  initState() {
+  void initState() {
     super.initState();
   }
 
+  // @override
+  // void dispose() {
+  //   mouseSocket.close();
+  //   super.dispose();
+  // }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 10,
-        title: Text("무선마우스",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        leading: IconButton(
-            onPressed: () {
-              showSnackBar("구현 진행중..");
-            },
-            icon: Icon(Icons.menu)),
-        actions: [_SendButton()],
-      ),
-      body: Builder(
-        builder: (BuildContext context) {
-          return ListView(
-            children: <Widget>[
-              _IPdata("IP Address", "192.168.0.1"),
-              _InfoWidget(context),
-              _Questions()
-            ],
-          );
-        },
+    return RefreshIndicator(
+      key: _refreshIndicatorKey,
+      onRefresh: _onRefresh,
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 10,
+          title: Text("무선마우스",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          centerTitle: true,
+          leading: IconButton(
+              onPressed: () {
+                showSnackBar("구현 진행중..");
+              },
+              icon: Icon(Icons.menu)),
+          actions: [_SendButton()],
+        ),
+        body: Builder(
+          builder: (BuildContext context) {
+            return ListView(
+              children: <Widget>[
+                _IPdata("IP Address", "192.168.0.1"),
+                _InfoWidget(context),
+                _Questions()
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -81,11 +99,15 @@ class _HomePageState extends State<HomePage> {
   Widget _SendButton() {
     return IconButton(
         onPressed: () {
-          // showSnackBar("접속 실패! IP를 확인 해 주세요.");
-          Get.toNamed("/menu", arguments: IPStatus(ip: _ipController.text));
-          setState(() {
-            _ipController.text = "";
-          });
+          connectToServer();
+          if (serverCheck == 0) {
+            showSnackBar("접속 실패! IP를 확인 해 주세요.");
+          } else if (serverCheck == 1) {
+            Get.toNamed("/menu", arguments: IPStatus(ip: _ipController.text));
+            setState(() {
+              _ipController.text = "";
+            });
+          }
         },
         icon: Icon(Icons.send));
   }
@@ -216,6 +238,71 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<Null> _onRefresh() async {
+    print('refreshing...');
+  }
+
+  void connectToServer() async {
+    print("Destination Address: ${_ipController.text}");
+    int port = 50003;
+    Socket.connect(_ipController.text, port, timeout: Duration(seconds: 5))
+        .then((socket) {
+      setState(() {
+        mouseSocket = socket;
+      });
+      serverCheck = 1;
+      showSnackBar("Server : 서버에 연결되었습니다.");
+      socket.listen(
+        (onData) {
+          String packet = String.fromCharCodes(onData).trim();
+          Map data = Protocol.Decoder(packet);
+          print(data);
+          packetHandler(data);
+          setState(() {
+            items.insert(
+                0,
+                MessageItem(mouseSocket.remoteAddress.address,
+                    String.fromCharCodes(onData).trim()));
+          });
+        },
+        onDone: onDone,
+        onError: onError,
+      );
+    }).catchError((e) {
+      showSnackBar(e.toString());
+    });
+  }
+
+  void onDone() {
+    disconnectFromServer();
+  }
+
+  void onError(e) {
+    print("onError: $e");
+    showSnackBar(e.toString());
+    disconnectFromServer();
+  }
+
+  void disconnectFromServer() {
+    showSnackBar("서버 연결이 종료되었습니다.");
+    serverCheck = 0;
+    mouseSocket.close();
+  }
+
+  void packetHandler(Map data) {
+    int part = data["part"];
+    if (part == PacketCreator.MOUSE_GESTURE) {
+      print("packet: ${data["res"]}");
+      WidgetsBinding.instance!.addPostFrameCallback((_) {
+        _refreshIndicatorKey.currentState!.show(); // 화면 업데이트
+      });
+    }
+  }
+
+  // void mouseGesture() {
+  //   mouseSocket.write(PacketCreator.MOUSE_GESTURE(x, y));
+  // }
+
   showSnackBar(String message) {
     final snackBar = SnackBar(
       content: Text(message),
@@ -232,4 +319,11 @@ class IPStatus {
   String ip;
 
   IPStatus({required this.ip});
+}
+
+class MessageItem {
+  String owner;
+  String content;
+
+  MessageItem(this.owner, this.content);
 }
