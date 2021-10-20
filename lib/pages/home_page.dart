@@ -31,12 +31,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  // @override
-  // void dispose() {
-  //   mouseSocket.close();
-  //   super.dispose();
-  // }
-
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -143,7 +137,8 @@ class _HomePageState extends State<HomePage> {
           } else if (serverCheck == 1) {
             Get.toNamed("/menu", arguments: IPStatus(ip: _ipController.text));
             setState(() {
-              _ipController.text = "";
+              // _ipController.text = "";
+              // _portController.text = "";
             });
           }
         },
@@ -277,7 +272,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<Null> _onRefresh() async {
-    print('refreshing...');
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      _refreshIndicatorKey.currentState!.show(); // 화면 업데이트
+    });
   }
 
   void connectToServer() async {
@@ -326,23 +323,18 @@ class _HomePageState extends State<HomePage> {
 
   void disconnectFromServer() {
     showSnackBar("서버 연결이 종료되었습니다.");
-    serverCheck = 0;
     SocketObject.mouseSocket.close();
+    setState(() {
+      serverCheck = 0;
+    });
   }
 
   void packetHandler(Map data) {
     int part = data["part"];
     if (part == PacketCreator.MOUSE_GESTURE) {
       print("packet: ${data["res"]}");
-      // WidgetsBinding.instance!.addPostFrameCallback((_) {
-      //   _refreshIndicatorKey.currentState!.show(); // 화면 업데이트
-      // });
     }
   }
-
-  // void mouseGesture() {
-  //   mouseSocket.write(PacketCreator.MOUSE_GESTURE(x, y));
-  // }
 
   showSnackBar(String message) {
     final snackBar = SnackBar(
