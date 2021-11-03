@@ -6,13 +6,17 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
+import 'dart:ui';
+import 'package:flutter/services.dart' show rootBundle;
+// import 'dart:ui' as ui;
+import 'package:image/image.dart' as image;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
+// import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wireless_mouse/Socket/PacketCreator.dart';
@@ -72,6 +76,7 @@ class _CameraPageState extends State<CameraPage>
   double _maxAvailableZoom = 1.0;
   double _currentScale = 1.0;
   double _baseScale = 1.0;
+  bool checked = true;
 
   // Counting pointers (number of user fingers on screen)
   int _pointers = 0;
@@ -89,7 +94,6 @@ class _CameraPageState extends State<CameraPage>
   void initState() {
     super.initState();
     _initialCamera();
-
     _ambiguate(WidgetsBinding.instance)?.addObserver(this);
 
     _flashModeControlRowAnimationController = AnimationController(
@@ -531,44 +535,28 @@ class _CameraPageState extends State<CameraPage>
     );
   }
 
-  void _capture(Uint8List? pngBytes) async {
-    String sendData = "";
+  void _capture(Uint8List? pngBytes, int width, int height) async {
     print("START CAPTURE");
-    var renderObject = globalKey.currentContext?.findRenderObject();
-    if (renderObject is RenderRepaintBoundary) {
-      var boundary = renderObject;
-      ui.Image image = await boundary.toImage();
-      final directory = (await getApplicationDocumentsDirectory()).path;
-      ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
-      // pngBytes = byteData?.buffer.asUint8List();
-      for (int i = 0; i < pngBytes!.length; i++) {
-        if (i == 0) {
-          SocketObject.mouseSocket
-              .write(PacketCreator.cameraImages(1, pngBytes[i].toString()));
-          print("${1}, start");
-        } else {
-          SocketObject.mouseSocket
-              .write(PacketCreator.cameraImages(0, pngBytes[i].toString()));
-          // print("${0}, ${pngBytes[i]}");
-        }
+    for (int i = 0; i < pngBytes!.length; i++) {
+      if (i == 0) {
+        SocketObject.mouseSocket
+            .write(PacketCreator.cameraImages(1, pngBytes[i].toString()));
+        print("${1}, start");
+      } else {
+        SocketObject.mouseSocket
+            .write(PacketCreator.cameraImages(0, pngBytes[i].toString()));
+        // print("${0}, ${pngBytes[i]}");
       }
-      SocketObject.mouseSocket.write(PacketCreator.cameraImages(2, "end"));
-      print("${2}, end");
-      // print(pngBytes.length);
-      // print(pngBytes);
-      // pngBytes.hashCode;
-      File imgFile = new File('$directory/screenshot.png');
-      imgFile.writeAsBytes(pngBytes);
-      ShowCapturedWidget(context, pngBytes);
-      print("FINISH CAPTURE ${imgFile.path}");
     }
+    SocketObject.mouseSocket.write(PacketCreator.cameraImages(2, "end"));
+    print("${2}, end");
+    // ShowCapturedWidget(context, pngBytes);
+    print("FINISH CAPTURE");
   }
 
   /// Display the control bar with buttons to take pictures and record videos.
   Widget _captureControlRowWidget() {
     final CameraController? cameraController = controller;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       mainAxisSize: MainAxisSize.max,
@@ -579,6 +567,7 @@ class _CameraPageState extends State<CameraPage>
             onPressed: cameraController != null &&
                     cameraController.value.isInitialized &&
                     !cameraController.value.isRecordingVideo
+                // ? onTakePictureButtonPressed
                 ? onTakePictureButtonPressed
                 : null),
         IconButton(
@@ -706,7 +695,8 @@ class _CameraPageState extends State<CameraPage>
 
     final CameraController cameraController = CameraController(
       cameraDescription,
-      kIsWeb ? ResolutionPreset.max : ResolutionPreset.medium,
+      kIsWeb ? ResolutionPreset.low : ResolutionPreset.low,
+      //ios: 352x288, android: 320x240
       enableAudio: enableAudio,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
@@ -757,17 +747,22 @@ class _CameraPageState extends State<CameraPage>
       if (mounted) {
         setState(() {
           imageFile = file;
-
+          print(file?.path);
           file?.length().then((int? length) {
             //이미지 파일의 크기를 출력
             print(length);
           });
           file?.readAsBytes().then((bytes) {
-            //이미지 데이터를 바이트로 받아옴
-            // controller.
-            // bytes = ByteData(length)
             // print(bytes);
-            _capture(bytes);
+            Image.memory(bytes).image.resolve(ImageConfiguration()).addListener(
+              ImageStreamListener(
+                (ImageInfo info, bool _) {
+                  _capture(bytes, info.image.width, info.image.height);
+                  print(info.image.width); //이미지 가로
+                  print(info.image.height); //이미지 세로
+                },
+              ),
+            );
           });
           videoController?.dispose();
           videoController = null;
