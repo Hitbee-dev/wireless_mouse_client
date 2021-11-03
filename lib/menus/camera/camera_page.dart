@@ -6,11 +6,17 @@
 
 import 'dart:async';
 import 'dart:io';
-
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wireless_mouse/Socket/PacketCreator.dart';
+import 'package:wireless_mouse/Socket/SocketObject.dart';
 
 List<CameraDescription> cameras = [];
 
@@ -46,6 +52,7 @@ void logError(String code, String? message) {
 class _CameraPageState extends State<CameraPage>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   CameraController? controller;
+  var globalKey = GlobalKey();
   XFile? imageFile;
   XFile? videoFile;
   VideoPlayerController? videoController;
@@ -60,6 +67,7 @@ class _CameraPageState extends State<CameraPage>
   late Animation<double> _exposureModeControlRowAnimation;
   late AnimationController _focusModeControlRowAnimationController;
   late Animation<double> _focusModeControlRowAnimation;
+  ScreenshotController screenshotController = ScreenshotController();
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
   double _currentScale = 1.0;
@@ -81,6 +89,7 @@ class _CameraPageState extends State<CameraPage>
   void initState() {
     super.initState();
     _initialCamera();
+
     _ambiguate(WidgetsBinding.instance)?.addObserver(this);
 
     _flashModeControlRowAnimationController = AnimationController(
@@ -198,20 +207,23 @@ class _CameraPageState extends State<CameraPage>
             child: Text("Click if you want to use it")),
       );
     } else {
-      return Listener(
-        onPointerDown: (_) => _pointers++,
-        onPointerUp: (_) => _pointers--,
-        child: CameraPreview(
-          controller!,
-          child: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-            return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onScaleStart: _handleScaleStart,
-              onScaleUpdate: _handleScaleUpdate,
-              onTapDown: (details) => onViewFinderTap(details, constraints),
-            );
-          }),
+      return RepaintBoundary(
+        key: globalKey,
+        child: Listener(
+          onPointerDown: (_) => _pointers++,
+          onPointerUp: (_) => _pointers--,
+          child: CameraPreview(
+            controller!,
+            child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onScaleStart: _handleScaleStart,
+                onScaleUpdate: _handleScaleUpdate,
+                onTapDown: (details) => onViewFinderTap(details, constraints),
+              );
+            }),
+          ),
         ),
       );
     }
@@ -519,6 +531,40 @@ class _CameraPageState extends State<CameraPage>
     );
   }
 
+  void _capture(Uint8List? pngBytes) async {
+    String sendData = "";
+    print("START CAPTURE");
+    var renderObject = globalKey.currentContext?.findRenderObject();
+    if (renderObject is RenderRepaintBoundary) {
+      var boundary = renderObject;
+      ui.Image image = await boundary.toImage();
+      final directory = (await getApplicationDocumentsDirectory()).path;
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      // pngBytes = byteData?.buffer.asUint8List();
+      for (int i = 0; i < pngBytes!.length; i++) {
+        if (i == 0) {
+          SocketObject.mouseSocket
+              .write(PacketCreator.cameraImages(1, pngBytes[i].toString()));
+          print("${1}, start");
+        } else {
+          SocketObject.mouseSocket
+              .write(PacketCreator.cameraImages(0, pngBytes[i].toString()));
+          // print("${0}, ${pngBytes[i]}");
+        }
+      }
+      SocketObject.mouseSocket.write(PacketCreator.cameraImages(2, "end"));
+      print("${2}, end");
+      // print(pngBytes.length);
+      // print(pngBytes);
+      // pngBytes.hashCode;
+      File imgFile = new File('$directory/screenshot.png');
+      imgFile.writeAsBytes(pngBytes);
+      ShowCapturedWidget(context, pngBytes);
+      print("FINISH CAPTURE ${imgFile.path}");
+    }
+  }
+
   /// Display the control bar with buttons to take pictures and record videos.
   Widget _captureControlRowWidget() {
     final CameraController? cameraController = controller;
@@ -530,17 +576,11 @@ class _CameraPageState extends State<CameraPage>
         IconButton(
             icon: const Icon(Icons.camera_alt),
             color: Colors.blue,
-            onPressed: () {
-              while (true) {
-                onTakePictureButtonPressed();
-              }
-            }
-            // cameraController != null &&
-            //         cameraController.value.isInitialized &&
-            //         !cameraController.value.isRecordingVideo
-            //     ? onTakePictureButtonPressed
-            //     : null
-            ),
+            onPressed: cameraController != null &&
+                    cameraController.value.isInitialized &&
+                    !cameraController.value.isRecordingVideo
+                ? onTakePictureButtonPressed
+                : null),
         IconButton(
           icon: const Icon(Icons.videocam),
           color: Colors.blue,
@@ -583,6 +623,23 @@ class _CameraPageState extends State<CameraPage>
               cameraController == null ? null : onPausePreviewButtonPressed,
         ),
       ],
+    );
+  }
+
+  Future<dynamic> ShowCapturedWidget(
+      BuildContext context, Uint8List capturedImage) {
+    return showDialog(
+      useSafeArea: false,
+      context: context,
+      builder: (context) => Scaffold(
+        appBar: AppBar(
+          title: Text("Captured widget screenshot"),
+        ),
+        body: Center(
+            child: capturedImage != null
+                ? Image.memory(capturedImage)
+                : Container()),
+      ),
     );
   }
 
@@ -705,10 +762,13 @@ class _CameraPageState extends State<CameraPage>
             //이미지 파일의 크기를 출력
             print(length);
           });
-          // file?.readAsBytes().then((bytes) {
-          //   //이미지 데이터를 바이트로 받아옴
-          //   print(bytes);
-          // });
+          file?.readAsBytes().then((bytes) {
+            //이미지 데이터를 바이트로 받아옴
+            // controller.
+            // bytes = ByteData(length)
+            // print(bytes);
+            _capture(bytes);
+          });
           videoController?.dispose();
           videoController = null;
         });

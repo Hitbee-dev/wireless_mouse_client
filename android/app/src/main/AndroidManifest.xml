@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.wireless_mouse">
+
    <application
         android:label="wireless_mouse"
         android:icon="@mipmap/ic_launcher">
@@ -37,9 +38,7 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-            <uses-permission android:name="android.permission.BLUETOOTH" />  
-	          <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />  
-	          <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>  
+ 
     </application>
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
@@ -49,4 +48,5 @@
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
+
 </manifest>
