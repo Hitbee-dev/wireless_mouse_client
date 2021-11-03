@@ -568,7 +568,7 @@ class _CameraPageState extends State<CameraPage>
                     cameraController.value.isInitialized &&
                     !cameraController.value.isRecordingVideo
                 // ? onTakePictureButtonPressed
-                ? onTakePictureButtonPressed
+                ? runnn
                 : null),
         IconButton(
           icon: const Icon(Icons.videocam),
@@ -742,6 +742,14 @@ class _CameraPageState extends State<CameraPage>
     }
   }
 
+  runnn() async {
+    while (checked) {
+      onTakePictureButtonPressed();
+
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+  }
+
   void onTakePictureButtonPressed() {
     takePicture().then((XFile? file) {
       if (mounted) {
@@ -866,6 +874,7 @@ class _CameraPageState extends State<CameraPage>
   }
 
   Future<void> onPausePreviewButtonPressed() async {
+    checked = !checked;
     final CameraController? cameraController = controller;
 
     if (cameraController == null || !cameraController.value.isInitialized) {
