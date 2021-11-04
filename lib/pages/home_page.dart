@@ -137,8 +137,8 @@ class _HomePageState extends State<HomePage> {
           // //testcode
           // Get.toNamed("/menu", arguments: IPStatus(ip: _ipController.text));
           setState(() {
-            _ipController.text = "";
-            _portController.text = "";
+            // _ipController.text = "";
+            // _portController.text = "";
           });
           //realcode
           if (serverCheck == 0) {

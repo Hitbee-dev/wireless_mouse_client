@@ -35,89 +35,42 @@ class _TouchpadPageState extends State<TouchpadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Container(
-                      width: 120,
-                      height: 70,
-                      color: Colors.black,
-                      child: TextButton(child: Text("Left"), onPressed: () {})),
-                ),
-                Container(
-                    width: 60,
-                    height: 70,
-                    color: Colors.black,
-                    child: TextButton(child: Text("Wheel"), onPressed: () {})),
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Container(
-                      width: 120,
-                      height: 70,
-                      color: Colors.black,
-                      child:
-                          TextButton(child: Text("Right"), onPressed: () {})),
-                )
-              ],
-            ),
-            Expanded(
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                color: Colors.white,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height / 1.29,
-                child: Expanded(
-                  child: GestureDetector(
-                    onPanUpdate: (details) {
-                      setState(() {
-                        this.cdx =
-                            details.globalPosition.dx - (this.boxWidth / 2);
-                        this.cdy =
-                            details.globalPosition.dy - (this.boxHeight / 2);
+        backgroundColor: Colors.white,
+        body: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              setState(() {
+                this.cdx = details.globalPosition.dx - (this.boxWidth / 2);
+                this.cdy = details.globalPosition.dy - (this.boxHeight / 2);
 
-                        SocketObject.mouseSocket.write(
-                            PacketCreator.mouseGesture(this.cdx, this.cdy));
+                SocketObject.mouseSocket
+                    .write(PacketCreator.mouseGesture(this.cdx, this.cdy));
 
-                        if (this.cdx > 0) {
-                          print("x: ${this.cdx}");
-                        }
-                        if (this.cdy > 0) {
-                          print("y: ${this.cdy}");
-                        }
-                      });
-                    },
+                if (this.cdx > 0) {
+                  print("x: ${this.cdx}");
+                }
+                if (this.cdy > 0) {
+                  print("y: ${this.cdy}");
+                }
+              });
+            },
+            child: Container(
+              color: Colors.black,
+              child: Stack(
+                children: [
+                  Transform.translate(
+                    offset: Offset(cdx, cdy),
                     child: Container(
-                      color: Colors.black,
-                      child: Stack(
-                        children: [
-                          Transform.translate(
-                            offset: Offset(cdx, cdy),
-                            child: Container(
-                                width: this.boxWidth,
-                                height: this.boxHeight,
-                                color: Colors.black),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                        width: this.boxWidth,
+                        height: this.boxHeight,
+                        color: Colors.black),
+                  )
+                ],
               ),
-            )
-          ],
-        ),
-      ),
-    );
+            ),
+          ),
+        ));
   }
 }
