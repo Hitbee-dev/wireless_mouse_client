@@ -1,22 +1,13 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// ignore_for_file: public_member_api_docs
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:flutter/services.dart' show rootBundle;
-// import 'dart:ui' as ui;
 import 'package:image/image.dart' as image;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-// import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wireless_mouse/Socket/PacketCreator.dart';
@@ -56,7 +47,6 @@ void logError(String code, String? message) {
 class _CameraPageState extends State<CameraPage>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   CameraController? controller;
-  var globalKey = GlobalKey();
   XFile? imageFile;
   bool enableAudio = true;
   late AnimationController _flashModeControlRowAnimationController;
@@ -185,23 +175,20 @@ class _CameraPageState extends State<CameraPage>
             child: Text("Click if you want to use it")),
       );
     } else {
-      return RepaintBoundary(
-        key: globalKey,
-        child: Listener(
-          onPointerDown: (_) => _pointers++,
-          onPointerUp: (_) => _pointers--,
-          child: CameraPreview(
-            controller!,
-            child: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onScaleStart: _handleScaleStart,
-                onScaleUpdate: _handleScaleUpdate,
-                onTapDown: (details) => onViewFinderTap(details, constraints),
-              );
-            }),
-          ),
+      return Listener(
+        onPointerDown: (_) => _pointers++,
+        onPointerUp: (_) => _pointers--,
+        child: CameraPreview(
+          controller!,
+          child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onScaleStart: _handleScaleStart,
+              onScaleUpdate: _handleScaleUpdate,
+              onTapDown: (details) => onViewFinderTap(details, constraints),
+            );
+          }),
         ),
       );
     }

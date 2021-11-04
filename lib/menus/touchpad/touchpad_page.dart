@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:wireless_mouse/Socket/PacketCreator.dart';
 import 'package:wireless_mouse/Socket/SocketObject.dart';
 import 'package:wireless_mouse/pages/home_page.dart';
@@ -34,43 +35,99 @@ class _TouchpadPageState extends State<TouchpadPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.white,
-        body: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child: GestureDetector(
-            onPanUpdate: (details) {
-              setState(() {
-                this.cdx = details.globalPosition.dx - (this.boxWidth / 2);
-                this.cdy = details.globalPosition.dy - (this.boxHeight / 2);
+    return Stack(children: [
+      backgroudImage(),
+      Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Container(
+            color: Colors.transparent,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            child: GestureDetector(
+              onPanUpdate: (details) {
+                setState(() {
+                  this.cdx = details.globalPosition.dx - (this.boxWidth / 2);
+                  this.cdy = details.globalPosition.dy - (this.boxHeight / 2);
 
+                  SocketObject.mouseSocket
+                      .write(PacketCreator.mouseGesture(this.cdx, this.cdy));
+
+                  if (this.cdx > 0) {
+                    print("x: ${this.cdx}");
+                  }
+                  if (this.cdy > 0) {
+                    print("y: ${this.cdy}");
+                  }
+                });
+              },
+              onDoubleTap: () {
                 SocketObject.mouseSocket
-                    .write(PacketCreator.mouseGesture(this.cdx, this.cdy));
+                    .write(PacketCreator.mousedoubleClick(2));
+                print("doubleclick");
+              },
+              onTapUp: (TapUpDetails details) {
+                setState(() {
+                  this.cdx = details.globalPosition.dx - (this.boxWidth / 2);
+                  this.cdy = details.globalPosition.dy - (this.boxHeight / 2);
 
-                if (this.cdx > 0) {
-                  print("x: ${this.cdx}");
-                }
-                if (this.cdy > 0) {
-                  print("y: ${this.cdy}");
-                }
-              });
-            },
-            child: Container(
-              color: Colors.black,
-              child: Stack(
-                children: [
-                  Transform.translate(
-                    offset: Offset(cdx, cdy),
-                    child: Container(
-                        width: this.boxWidth,
-                        height: this.boxHeight,
-                        color: Colors.black),
-                  )
-                ],
+                  if (this.cdy < 400) {
+                    SocketObject.mouseSocket
+                        .write(PacketCreator.mouseleftClick(0));
+                    print("leftclick");
+                  } else if (this.cdy > 400) {
+                    SocketObject.mouseSocket
+                        .write(PacketCreator.mouserightClick(1));
+                    print("rightclick");
+                  }
+                });
+              },
+              child: Container(
+                color: Colors.transparent,
+                child: Stack(
+                  children: [
+                    Transform.translate(
+                      offset: Offset(cdx, cdy),
+                      child: Container(
+                          width: this.boxWidth,
+                          height: this.boxHeight,
+                          color: Colors.transparent),
+                    )
+                  ],
+                ),
               ),
             ),
-          ),
-        ));
+          )),
+    ]);
+  }
+
+  Widget backgroudImage() {
+    return Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("images/background.png"),
+          // fit: BoxFit.cover,
+        ),
+      ),
+    );
+
+    // return ShaderMask(
+    //   shaderCallback: (bounds) => LinearGradient(
+    //     colors: [Colors.black, Colors.black12],
+    //     begin: Alignment.bottomCenter,
+    //     end: Alignment.center,
+    //   ).createShader(bounds),
+    //   // blendMode: BlendMode.darken,
+    //   child: Container(
+    //     decoration: BoxDecoration(
+    //       image: DecorationImage(
+    //         image: AssetImage('images/background.png'),
+
+    //         /// change this to your  image directory
+    //         fit: BoxFit.cover,
+    //         colorFilter: ColorFilter.mode(Colors.black45, BlendMode.darken),
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 }
