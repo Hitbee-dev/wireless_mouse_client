@@ -1,16 +1,16 @@
-# wireless_mouse
+# Flutter + Python 무선마우스
 
-A new Flutter project.
+## 1. 터치패드
+- 기능
+  - 이동
+  - 좌클릭
+  - 우클릭
+  - 더블클릭
+https://user-images.githubusercontent.com/83276163/141697862-21430593-0d4b-4f1a-914e-5bb02de162bc.mp4
 
-## Getting Started
+## 2. 이미지트래킹 사용으로 마우스포인터 제어
+- 사진을 저장하지않고 핸드폰 메모리에 올리자마자 데이터로 보내봤지만 통신속도가 너무 느려서 실시간으로 비교하기가 어렵다..
+https://user-images.githubusercontent.com/83276163/141697860-226c12a8-5cd5-4407-9c5b-3ed0e8c478ff.mp4
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 3. Server
+- https://github.com/K9714/wireless_mouse_server
