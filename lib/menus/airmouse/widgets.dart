@@ -1,3 +1,4 @@
+import 'package:dialogs/dialogs/message_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 
@@ -91,7 +92,14 @@ class ScanResultTile extends StatelessWidget {
         child: Text('CONNECT'),
         color: Colors.black,
         textColor: Colors.white,
-        onPressed: (result.advertisementData.connectable) ? onTap : null,
+        onPressed: () {
+          MessageDialog(
+                  title: "연결 성공!",
+                  titleColor: Colors.green,
+                  buttonOkText: "확인",
+                  message: "기기와 연결되었습니다!")
+              .show(context);
+        },
       ),
       children: <Widget>[
         _buildAdvRow(
