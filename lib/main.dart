@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:wireless_mouse/menus/airmouse/airmouse.dart';
 import 'package:wireless_mouse/menus/camera/camera_page.dart';
 import 'package:wireless_mouse/menus/hardware/hardware_page.dart';
 import 'package:wireless_mouse/menus/touchpad/touchpad_page.dart';
@@ -38,6 +39,10 @@ class WireLessMouse extends StatelessWidget {
         GetPage(
             name: "/hardware",
             page: () => HardwarePage(),
+            transition: Transition.cupertinoDialog),
+        GetPage(
+            name: "/airmouse",
+            page: () => AirMousePage(),
             transition: Transition.cupertinoDialog),
       ],
     );

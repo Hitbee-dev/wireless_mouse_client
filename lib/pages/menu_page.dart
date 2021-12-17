@@ -16,21 +16,26 @@ class MenuPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(ips),
       ),
-      body: Container(
-        child: Center(
-          child: Column(
-            children: [
-              _menuButton("TouchPad", () {
-                Get.toNamed("/touchpad");
-              }),
-              _menuButton("Camera", () {
-                Get.toNamed("/camera");
-              }),
-              _menuButton("HardWare", () {
-                Get.toNamed("/hardware");
-              }),
-              _InfoWidget(context)
-            ],
+      body: SingleChildScrollView(
+        child: Container(
+          child: Center(
+            child: Column(
+              children: [
+                _menuButton("TouchPad", () {
+                  Get.toNamed("/touchpad");
+                }),
+                _menuButton("Camera", () {
+                  Get.toNamed("/camera");
+                }),
+                _menuButton("HardWare", () {
+                  Get.toNamed("/hardware");
+                }),
+                _menuButton("AirMouse", () {
+                  Get.toNamed("/airmouse");
+                }),
+                _InfoWidget(context)
+              ],
+            ),
           ),
         ),
       ),
@@ -39,7 +44,7 @@ class MenuPage extends StatelessWidget {
 
   Widget _menuButton(String name, Function) {
     return Padding(
-      padding: const EdgeInsets.only(top: 50, left: 20, right: 20),
+      padding: const EdgeInsets.only(top: 25, left: 20, right: 20),
       child: Card(
         elevation: 7,
         child: ElevatedButton(
@@ -85,14 +90,16 @@ class MenuPage extends StatelessWidget {
               child: Column(
                 children: <Widget>[
                   SizedBox(
-                      height: 160,
+                      height: 200,
                       child: Text(
                           '1. TouchPad\n'
                           '   - 노트북과 같은 트랙패드 형식으로 사용\n\n'
                           '2. Camera\n'
                           '   - 카메라를 이용한 이미지 트랙킹 기법으로 사용\n\n'
                           '3. HardWare\n'
-                          '   - 추가 장치를 사용하여 실제 마우스 형식으로 사용\n\n',
+                          '   - 추가 장치를 사용하여 실제 마우스 형식으로 사용\n\n'
+                          '4. AirMouse\n'
+                          '   - 허공에 Gesture를 취해 조작하는 형식으로 사용\n\n',
                           style: TextStyle(color: Colors.black87))),
                 ],
               ),
